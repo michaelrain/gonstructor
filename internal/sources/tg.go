@@ -18,11 +18,13 @@ type TG struct {
 }
 
 type TGConfig struct {
-	Token string `json:"token" bson:"token" yaml:"token" mapstructure:"token"`
+	Token     string `json:"token" bson:"token" yaml:"token" mapstructure:"token"`
+	ParseMode string `json:"parse_mode" bson:"parse_mode" yaml:"parse_mode" mapstructure:"parse_mode"`
 }
 
 type TGResponder struct {
-	BotAPI *tgbotapi.BotAPI
+	BotAPI    *tgbotapi.BotAPI
+	ParseMode string
 }
 
 const resourceCode = "tg"
@@ -30,7 +32,8 @@ const resourceCode = "tg"
 func NewTGResource(conf *TGConfig, reqeustCh chan domain.Request) (TG, *TGResponder, error) {
 	api, err := tgbotapi.NewBotAPI(conf.Token)
 	responser := &TGResponder{
-		BotAPI: api,
+		BotAPI:    api,
+		ParseMode: conf.ParseMode,
 	}
 
 	return TG{
@@ -61,7 +64,7 @@ func (responder TGResponder) Send(ctx context.Context, s *state.State, response 
 			}
 
 			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(btns...)
-			msg.ParseMode = "Markdown"
+			msg.ParseMode = responder.ParseMode
 		}
 
 		_, err = responder.BotAPI.Send(msg)
